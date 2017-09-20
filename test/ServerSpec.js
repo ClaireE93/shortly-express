@@ -40,7 +40,7 @@ describe('', function() {
     /*************************************************************************************/
     db = mysql.createConnection({
       user: 'root',
-      password: '',
+      password: 'plantlife',
       database: 'shortly'
     });
 
@@ -355,7 +355,7 @@ describe('', function() {
 
         cookieParser(requestWithCookies, response, function() {
           var cookies = requestWithCookies.cookies;
-          console.log('Second test');
+          console.log('Second test', cookies);
           expect(cookies).to.be.an('object');
           expect(cookies).to.eql({ shortlyid: '8a864482005bcc8b968f2b18f8f7ea490e577b20' });
         });

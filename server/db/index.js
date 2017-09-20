@@ -6,7 +6,7 @@ const database = 'shortly';
 const connection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '',
+  password: 'plantlife',
 });
 
 const db = Promise.promisifyAll(connection, { multiArgs: true });
