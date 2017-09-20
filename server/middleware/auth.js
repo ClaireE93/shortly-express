@@ -50,13 +50,17 @@ module.exports.addUser = (req, res, next) => {
   };
 
   const checkString = `SELECT * FROM users WHERE username = "${req.body.username}"`;
-  db.query(checkString, (err, data) => {
-    if (data.length) {
+  db.queryAsync(checkString)
+  .then(([rows, cols]) => {
+    if (rows.length) {
       res.setHeader('location', '/signup');
       res.redirect('/signup');
     } else {
       cb(req, res);
     }
+  })
+  .catch((err) => {
+    console.error(err);
   });
 
 };
