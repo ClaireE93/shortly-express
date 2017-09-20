@@ -6,7 +6,9 @@ const bodyParser = require('body-parser');
 const Auth = require('./middleware/auth');
 const models = require('./models');
 const mysql = require('mysql');
-const db = require('./db');
+// const db = require('./db');
+const Promise = require('bluebird');
+const db = Promise.promisifyAll(require('./db'));
 
 const app = express();
 
@@ -79,28 +81,7 @@ app.post('/links',
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
-app.post('/signup', (req, res, next) => {
-  const inputPass = req.body.password;
-  const newSalt = utils.createRandom32String();
-  const newPass = utils.createHash(inputPass, newSalt);
-  // const queryString = `INSERT INTO users (username, password, salt) VALUES ("${newUser}", "${newPass}", "${newSalt}")`;
-  const queryString = `INSERT INTO users SET ?`;
-  const newUser = {
-    username: req.body.username,
-    password: newPass,
-    salt: newSalt,
-  };
-  db.query(queryString, newUser, function(err, results) {
-    if (err) {
-      res.statusCode = 400;
-      res.end(err.toString());
-    } else {
-      res.statusCode = 200;
-      console.log('ending response', results);
-      res.end();
-    }
-  });
-});
+app.post('/signup', Auth.addUser);
 
 
 /************************************************************/
