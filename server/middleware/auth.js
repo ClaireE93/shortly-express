@@ -7,25 +7,7 @@ const utils = require('../lib/hashUtils');
 module.exports.createSession = (req, res, next) => {
 };
 
-const userExists = (username) => {
-  const queryString = `SELECT * FROM users WHERE username = "${username}"`;
-  db.queryAsync(queryString)
-  .then((results) => {
-    if (results.length > 0) {
-      console.log('returning true');
-      return true;
-    } else {
-      return false;
-    }
-  })
-  .catch((err) => {
-    console.error('ERROR in userExists', err);
-    return false;
-  });
-};
-
 module.exports.addUser = (req, res, next) => {
-
 
   const cb = (req, res) => {
     const inputPass = req.body.password;
@@ -63,6 +45,40 @@ module.exports.addUser = (req, res, next) => {
     console.error(err);
   });
 
+};
+
+module.exports.checkLogin = (req, res, next) => {
+  const { username, password } = req.body;
+  // Query username. If exists, get salt
+  // Run hashing on salt to get encrypted password
+  // compare to input password
+
+  const cb = (data) => {
+    const retrievedPass = data.password;
+    const retrievedSalt = data.salt;
+    const hashedPassword = utils.createHash(password, retrievedSalt);
+    if (hashedPassword === retrievedPass) {
+      res.setHeader('location', '/');
+      res.redirect('/');
+    } else {
+      res.setHeader('location', '/login');
+      res.redirect('/login');
+    }
+  };
+
+  const checkString = `SELECT * FROM users WHERE username = "${username}"`;
+  db.queryAsync(checkString)
+  .then(([rows, cols]) => {
+    if (rows.length) {
+      cb(rows[0]);
+    } else {
+      res.setHeader('location', '/login');
+      res.redirect('/login');
+    }
+  })
+  .catch((err) => {
+    console.error(err);
+  });
 };
 
 

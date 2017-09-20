@@ -82,6 +82,7 @@ app.post('/links',
 // Write your authentication routes here
 /************************************************************/
 app.post('/signup', Auth.addUser);
+app.post('/login', Auth.checkLogin);
 
 
 /************************************************************/
