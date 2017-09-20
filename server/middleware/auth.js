@@ -3,6 +3,7 @@ const Promise = require('bluebird');
 const mysql = require('mysql');
 const db = Promise.promisifyAll(require('../db'));
 const utils = require('../lib/hashUtils');
+const User = require('../models/user');
 
 module.exports.createSession = (req, res, next) => {
 };
@@ -10,17 +11,8 @@ module.exports.createSession = (req, res, next) => {
 module.exports.addUser = (req, res, next) => {
 
   const cb = (req, res) => {
-    const inputPass = req.body.password;
-    const newSalt = utils.createRandom32String();
-    const newPass = utils.createHash(inputPass, newSalt);
-    const queryString = 'INSERT IGNORE INTO users SET ?';
-    const newUser = {
-      username: req.body.username,
-      password: newPass,
-      salt: newSalt,
-    };
-    db.queryAsync(queryString, newUser)
-    .then((results) => {
+    User.create(req.body)
+    .then(() => {
       res.statusCode = 200;
       res.setHeader('location', '/');
       res.redirect('/');
@@ -31,10 +23,9 @@ module.exports.addUser = (req, res, next) => {
     });
   };
 
-  const checkString = `SELECT * FROM users WHERE username = "${req.body.username}"`;
-  db.queryAsync(checkString)
-  .then(([rows, cols]) => {
-    if (rows.length) {
+  User.get(req.body.username)
+  .then((results) => {
+    if (results) {
       res.setHeader('location', '/signup');
       res.redirect('/signup');
     } else {
@@ -49,15 +40,10 @@ module.exports.addUser = (req, res, next) => {
 
 module.exports.checkLogin = (req, res, next) => {
   const { username, password } = req.body;
-  // Query username. If exists, get salt
-  // Run hashing on salt to get encrypted password
-  // compare to input password
-
+  
   const cb = (data) => {
-    const retrievedPass = data.password;
-    const retrievedSalt = data.salt;
-    const hashedPassword = utils.createHash(password, retrievedSalt);
-    if (hashedPassword === retrievedPass) {
+    const isRightPassword = User.compare(password, data.password, data.salt);
+    if (isRightPassword) {
       res.setHeader('location', '/');
       res.redirect('/');
     } else {
@@ -66,11 +52,10 @@ module.exports.checkLogin = (req, res, next) => {
     }
   };
 
-  const checkString = `SELECT * FROM users WHERE username = "${username}"`;
-  db.queryAsync(checkString)
-  .then(([rows, cols]) => {
-    if (rows.length) {
-      cb(rows[0]);
+  User.get(username)
+  .then((results) => {
+    if (results) {
+      cb(results);
     } else {
       res.setHeader('location', '/login');
       res.redirect('/login');
@@ -79,6 +64,7 @@ module.exports.checkLogin = (req, res, next) => {
   .catch((err) => {
     console.error(err);
   });
+
 };
 
 
