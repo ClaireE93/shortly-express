@@ -4,8 +4,19 @@ const models = require('../models');
 // const db = Promise.promisifyAll(require('../db'));
 const utils = require('../lib/hashUtils');
 const User = require('../models/user');
+const cookies = require('./cookieParser');
 
 module.exports.createSession = (req, res, next) => {
+  console.log('req.session is', req.session);
+  if (!req.session) {
+    req.session = {};
+    const hash = utils.createHash(utils.createRandom32String());
+    req.session.hash = hash;
+    res.cookies['shortlyid'] = { value: hash};
+    next();
+  } else {
+    next();
+  }
 };
 
 module.exports.addUser = (req, res, next) => {
