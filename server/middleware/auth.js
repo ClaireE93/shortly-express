@@ -8,20 +8,7 @@ const cookies = require('./cookieParser');
 const Session = require('../models/session');
 
 module.exports.createSession = (req, res, next) => {
-  if (req.cookies.shortlyid) {
-    const hash = req.cookies.shortlyid; //NOTE: Assume this is always the name
-    Session.get({ hash })
-    .then((results) => {
-      console.log('results are', results);
-      req.session = {};
-      req.session.user = {};
-      req.session.hash = hash;
-      req.session.userId = results.userId;
-      req.session.user.username = results.userId ? results.user.username : undefined;
-      next();
-    });
-
-  } else if (!req.session) {
+  const createSessionWithNewCookie = () => {
     Session.create()
     .then((result) => {
       return result.insertId;
@@ -37,6 +24,25 @@ module.exports.createSession = (req, res, next) => {
       res.cookies['shortlyid'] = { value: hash};
       next();
     });
+  };
+
+  if (req.cookies.shortlyid) {
+    const hash = req.cookies.shortlyid; //NOTE: Assume this is always the name
+    Session.get({ hash })
+    .then((results) => {
+      if (results) {
+        req.session = {};
+        req.session.user = {};
+        req.session.hash = hash;
+        req.session.userId = results.userId;
+        req.session.user.username = results.userId ? results.user.username : undefined;
+        next();
+      } else {
+        createSessionWithNewCookie();
+      }
+    });
+  } else if (!req.session) {
+    createSessionWithNewCookie();
   } else {
     next();
   }
