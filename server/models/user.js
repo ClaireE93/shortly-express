@@ -33,7 +33,7 @@ class Users extends Model {
    * @returns {Promise<Object>} A promise that is fulfilled with the result of
    * the record creation or rejected with the error that occured.
    */
-  create({ username, password }) {
+  createUser({ username, password }) {
     let salt = utils.createRandom32String();
 
     let newUser = {
@@ -47,10 +47,19 @@ class Users extends Model {
 
   // Username: String of username
   // This will return ONE record that matches this username
-  get(username) {
-    const obj = { username };
-    return super.get.call(this, obj);
-  }
+  // get(obj) {
+  //   // const obj = {};
+  //   // if (username) {
+  //   //   obj.username = username;
+  //   // } else if (id) {
+  //   //   obj.id = id;
+  //   // } else {
+  //   //   obj.username = username;
+  //   //   obj.id = id;
+  //   // }
+  //
+  //   return super.get.call(this, obj);
+  // }
 }
 
 module.exports = new Users();

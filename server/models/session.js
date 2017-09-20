@@ -39,6 +39,7 @@ class Sessions extends Model {
           return session;
         }
         return Users.get({ id: session.userId }).then(user => {
+          
           session.user = user;
           return session;
         });

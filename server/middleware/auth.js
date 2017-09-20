@@ -5,15 +5,38 @@ const models = require('../models');
 const utils = require('../lib/hashUtils');
 const User = require('../models/user');
 const cookies = require('./cookieParser');
+const Session = require('../models/session');
 
 module.exports.createSession = (req, res, next) => {
-  console.log('req.session is', req.session);
-  if (!req.session) {
-    req.session = {};
-    const hash = utils.createHash(utils.createRandom32String());
-    req.session.hash = hash;
-    res.cookies['shortlyid'] = { value: hash};
-    next();
+  if (req.cookies.shortlyid) {
+    const hash = req.cookies.shortlyid; //NOTE: Assume this is always the name
+    Session.get({ hash })
+    .then((results) => {
+      console.log('results are', results);
+      req.session = {};
+      req.session.user = {};
+      req.session.hash = hash;
+      req.session.userId = results.userId;
+      req.session.user.username = results.userId ? results.user.username : undefined;
+      next();
+    });
+
+  } else if (!req.session) {
+    Session.create()
+    .then((result) => {
+      return result.insertId;
+    })
+    .then((id) => {
+      return Session.get({ id });
+    })
+    .then((result) => {
+      const { hash } = result;
+      req.session = {};
+      req.session.user = {};
+      req.session.hash = hash;
+      res.cookies['shortlyid'] = { value: hash};
+      next();
+    });
   } else {
     next();
   }
@@ -23,7 +46,7 @@ module.exports.addUser = (req, res, next) => {
 
   // Create new user in database
   const cb = (req, res) => {
-    User.create(req.body)
+    User.createUser(req.body)
     .then(() => {
       res.statusCode = 200;
       res.setHeader('location', '/');
@@ -36,7 +59,7 @@ module.exports.addUser = (req, res, next) => {
   };
 
   // Check if username exists
-  User.get(req.body.username)
+  User.get({username: req.body.username})
   .then((results) => {
     if (results) {
       res.setHeader('location', '/signup');
@@ -67,7 +90,7 @@ module.exports.checkLogin = (req, res, next) => {
   };
 
   // Check if user exists
-  User.get(username)
+  User.get({username})
   .then((results) => {
     if (results) {
       cb(results);
