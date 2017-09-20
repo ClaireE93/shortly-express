@@ -348,12 +348,14 @@ describe('', function() {
 
         cookieParser(requestWithoutCookies, response, function() {
           var cookies = requestWithoutCookies.cookies;
+          console.log('First test');
           expect(cookies).to.be.an('object');
           expect(cookies).to.eql({});
         });
 
         cookieParser(requestWithCookies, response, function() {
           var cookies = requestWithCookies.cookies;
+          console.log('Second test');
           expect(cookies).to.be.an('object');
           expect(cookies).to.eql({ shortlyid: '8a864482005bcc8b968f2b18f8f7ea490e577b20' });
         });

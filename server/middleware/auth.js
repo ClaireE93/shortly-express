@@ -1,7 +1,7 @@
 const models = require('../models');
-const Promise = require('bluebird');
-const mysql = require('mysql');
-const db = Promise.promisifyAll(require('../db'));
+// const Promise = require('bluebird');
+// const mysql = require('mysql');
+// const db = Promise.promisifyAll(require('../db'));
 const utils = require('../lib/hashUtils');
 const User = require('../models/user');
 
@@ -70,9 +70,3 @@ module.exports.checkLogin = (req, res, next) => {
   });
 
 };
-
-
-
-/************************************************************/
-// Add additional authentication middleware functions below
-/************************************************************/
