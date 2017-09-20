@@ -10,6 +10,7 @@ module.exports.createSession = (req, res, next) => {
 
 module.exports.addUser = (req, res, next) => {
 
+  // Create new user in database
   const cb = (req, res) => {
     User.create(req.body)
     .then(() => {
@@ -23,6 +24,7 @@ module.exports.addUser = (req, res, next) => {
     });
   };
 
+  // Check if username exists
   User.get(req.body.username)
   .then((results) => {
     if (results) {
@@ -40,7 +42,8 @@ module.exports.addUser = (req, res, next) => {
 
 module.exports.checkLogin = (req, res, next) => {
   const { username, password } = req.body;
-  
+
+  // Check if input password is correct
   const cb = (data) => {
     const isRightPassword = User.compare(password, data.password, data.salt);
     if (isRightPassword) {
@@ -52,6 +55,7 @@ module.exports.checkLogin = (req, res, next) => {
     }
   };
 
+  // Check if user exists
   User.get(username)
   .then((results) => {
     if (results) {

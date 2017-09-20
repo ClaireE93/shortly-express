@@ -45,6 +45,8 @@ class Users extends Model {
     return super.create.call(this, newUser);
   }
 
+  // Username: String of username
+  // This will return ONE record that matches this username
   get(username) {
     const obj = { username };
     return super.get.call(this, obj);
