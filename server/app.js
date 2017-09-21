@@ -30,12 +30,12 @@ app.get('/', Auth.createSession, Auth.loginRedirect,
   res.render('index');
 });
 
-app.get('/create',
+app.get('/create', Auth.isLoggedIn,
 (req, res) => {
   res.render('index');
 });
 
-app.get('/links',
+app.get('/links', Auth.isLoggedIn,
 (req, res, next) => {
   models.Links.getAll()
     .then(links => {

@@ -118,7 +118,6 @@ module.exports.checkLogin = (req, res, next) => {
   const cb = (data) => {
     const isRightPassword = User.compare(password, data.password, data.salt);
     if (isRightPassword) {
-
       res.setHeader('location', '/');
       res.redirect('/');
     } else {
@@ -158,4 +157,13 @@ module.exports.handleLogout = (req, res, next) => {
       next();
     });
   });
+};
+
+module.exports.isLoggedIn = (req, res, next) => {
+  if (!req.headers.cookie) {
+    res.setHeader('location', '/login');
+    res.redirect('/login');
+  } else {
+    next();
+  }
 };
