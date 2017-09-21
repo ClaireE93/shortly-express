@@ -9,6 +9,7 @@ const mysql = require('mysql');
 // const db = require('./db');
 const Promise = require('bluebird');
 const db = Promise.promisifyAll(require('./db'));
+const morgan = require('morgan');
 
 const app = express();
 
@@ -18,22 +19,16 @@ app.use(partials());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
+// app.use(morgan('dev'));
 
-
+app.get('/login', (req, res, next) => {
+  res.render('login');
+});
 
 app.get('/', Auth.createSession, Auth.loginRedirect,
 (req, res) => {
   res.render('index');
 });
-
-// app.get('/', (req, res) => {
-//   Auth.createSession(req, res, (req, res) => {
-//     console.log('DONE with createSession')
-//     Auth.loginRedirect(req, res, (req, res) => {
-//       res.render('index');
-//       })
-//   })
-// })
 
 app.get('/create',
 (req, res) => {

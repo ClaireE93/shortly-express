@@ -54,23 +54,18 @@ module.exports.createSession = (req, res, next) => {
 
 
 module.exports.loginRedirect = (req, res, next) => {
-  console.log('NEXT!!');
   let cookieObj;
   cookies(req, res, () => {
-    // console.log('in cookies', req.cookies);
     cookieObj = req.cookies;
     curHash = cookieObj.shortlyid;
     Session.get({hash: curHash})
     .then((results) => {
       if (!results) {
         res.setHeader('location', '/login');
-        res.redirect('/login');
-      }
-      // console.log('Results userID is', results.userID);
-      if (results.userId === null) {
-        console.log('redirecting');
+        res.redirect(301, '/login');
+      } else if (results.userId === null) {
         res.setHeader('location', '/login');
-        res.redirect('/login');
+        res.redirect(301, '/login');
       } else {
         next();
       }
@@ -82,13 +77,13 @@ module.exports.loginRedirect = (req, res, next) => {
 };
 
 module.exports.addUser = (req, res, next) => {
-
   // Create new user in database
   const cb = (req, res) => {
     User.createUser(req.body)
     .then((results) => {
-      module.exports.createSession(req, res, (sessionId) => {
-        Session.update({id: sessionId}, {userId: results.insertId})
+      module.exports.createSession(req, res, () => {
+        const hash = res.cookies.shortlyid.value;
+        Session.update({ hash }, {userId: results.insertId})
         .then((results) => {
           res.setHeader('location', '/');
           res.redirect('/');
@@ -123,6 +118,7 @@ module.exports.checkLogin = (req, res, next) => {
   const cb = (data) => {
     const isRightPassword = User.compare(password, data.password, data.salt);
     if (isRightPassword) {
+
       res.setHeader('location', '/');
       res.redirect('/');
     } else {
