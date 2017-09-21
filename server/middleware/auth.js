@@ -21,12 +21,14 @@ module.exports.createSession = (req, res, next) => {
       req.session = {};
       req.session.user = {};
       req.session.hash = hash;
+      res.cookies = res.cookies ? res.cookies : {};
       res.cookies['shortlyid'] = { value: hash};
-      next();
+      res.cookie('shortlyid', hash);
+      next(result.id);
     });
   };
 
-  if (req.cookies.shortlyid) {
+  if (req.cookies && req.cookies.shortlyid) {
     const hash = req.cookies.shortlyid; //NOTE: Assume this is always the name
     Session.get({ hash })
     .then((results) => {
@@ -34,7 +36,7 @@ module.exports.createSession = (req, res, next) => {
         req.session = {};
         req.session.user = {};
         req.session.hash = hash;
-        req.session.userId = results.userId;
+        req.session.userId = results.userId ? results.userId : null;
         req.session.user.username = results.userId ? results.user.username : undefined;
         next();
       } else {
@@ -53,13 +55,16 @@ module.exports.addUser = (req, res, next) => {
   // Create new user in database
   const cb = (req, res) => {
     User.createUser(req.body)
-    .then(() => {
-      res.statusCode = 200;
-      res.setHeader('location', '/');
-      res.redirect('/');
+    .then((results) => {
+      module.exports.createSession(req, res, (sessionId) => {
+        Session.update({id: sessionId}, {userId: results.insertId})
+        .then((results) => {
+          res.setHeader('location', '/');
+          res.redirect('/');
+        });
+      });
     })
     .catch((err) => {
-      res.statusCode = 400;
       res.end(err.toString());
     });
   };

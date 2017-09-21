@@ -45,21 +45,6 @@ class Users extends Model {
     return super.create.call(this, newUser);
   }
 
-  // Username: String of username
-  // This will return ONE record that matches this username
-  // get(obj) {
-  //   // const obj = {};
-  //   // if (username) {
-  //   //   obj.username = username;
-  //   // } else if (id) {
-  //   //   obj.id = id;
-  //   // } else {
-  //   //   obj.username = username;
-  //   //   obj.id = id;
-  //   // }
-  //
-  //   return super.get.call(this, obj);
-  // }
 }
 
 module.exports = new Users();
