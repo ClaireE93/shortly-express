@@ -63,9 +63,6 @@ module.exports.loginRedirect = (req, res, next) => {
       if (!results) {
         res.setHeader('location', '/login');
         res.redirect(301, '/login');
-      } else if (results.userId === null) {
-        res.setHeader('location', '/login');
-        res.redirect(301, '/login');
       } else {
         next();
       }

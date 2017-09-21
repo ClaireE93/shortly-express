@@ -25,6 +25,10 @@ app.get('/login', (req, res, next) => {
   res.render('login');
 });
 
+app.get('/signup', (req, res, next) => {
+  res.render('signup');
+});
+
 app.get('/', Auth.createSession, Auth.loginRedirect,
 (req, res) => {
   res.render('index');
@@ -119,5 +123,8 @@ app.get('/:code', (req, res, next) => {
       res.redirect('/');
     });
 });
+
+
+
 
 module.exports = app;
