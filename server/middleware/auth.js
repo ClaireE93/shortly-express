@@ -1,7 +1,4 @@
 const models = require('../models');
-// const Promise = require('bluebird');
-// const mysql = require('mysql');
-// const db = Promise.promisifyAll(require('../db'));
 const utils = require('../lib/hashUtils');
 const User = require('../models/user');
 const cookies = require('./cookieParser');
@@ -24,7 +21,6 @@ module.exports.createSession = (req, res, next) => {
       res.cookies = res.cookies ? res.cookies : {};
       res.cookies['shortlyid'] = { value: hash};
       res.cookie('shortlyid', hash);
-      // next(result.id);
       next();
     });
   };
@@ -52,28 +48,8 @@ module.exports.createSession = (req, res, next) => {
   }
 };
 
-
-module.exports.loginRedirect = (req, res, next) => {
-  let cookieObj;
-  cookies(req, res, () => {
-    cookieObj = req.cookies;
-    curHash = cookieObj.shortlyid;
-    Session.get({hash: curHash})
-    .then((results) => {
-      if (!results) {
-        res.setHeader('location', '/login');
-        res.redirect(301, '/login');
-      } else {
-        next();
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-  });
-};
-
 module.exports.addUser = (req, res, next) => {
+
   // Create new user in database
   const cb = (req, res) => {
     User.createUser(req.body)
@@ -82,6 +58,9 @@ module.exports.addUser = (req, res, next) => {
         const hash = res.cookies.shortlyid.value;
         Session.update({ hash }, {userId: results.insertId})
         .then((results) => {
+          res.cookies = res.cookies ? res.cookies : {};
+          res.cookies['shortlyid'] = { value: hash};
+          res.cookie('shortlyid', hash);
           res.setHeader('location', '/');
           res.redirect('/');
         });
@@ -115,8 +94,23 @@ module.exports.checkLogin = (req, res, next) => {
   const cb = (data) => {
     const isRightPassword = User.compare(password, data.password, data.salt);
     if (isRightPassword) {
-      res.setHeader('location', '/');
-      res.redirect('/');
+      User.get({ username })
+      .then((data) => {
+        return data.id;
+      })
+      .then((userId) => {
+        module.exports.createSession(req, res, () => {
+          const hash = res.cookies.shortlyid.value;
+          Session.update({ hash }, { userId })
+          .then((results) => {
+            res.cookies = res.cookies ? res.cookies : {};
+            res.cookies['shortlyid'] = { value: hash};
+            res.cookie('shortlyid', hash);
+            res.setHeader('location', '/');
+            res.redirect('/');
+          });
+        });
+      })
     } else {
       res.setHeader('location', '/login');
       res.redirect('/login');
@@ -157,10 +151,22 @@ module.exports.handleLogout = (req, res, next) => {
 };
 
 module.exports.isLoggedIn = (req, res, next) => {
-  if (!req.headers.cookie) {
-    res.setHeader('location', '/login');
-    res.redirect('/login');
-  } else {
-    next();
-  }
+  cookies(req, res, () => {
+    const cookie = req.cookies.shortlyid;
+    Session.get({ hash: cookie })
+    .then((data) => {
+      if (!data || data.userId === null) {
+        res.setHeader('location', '/login');
+        res.redirect('/login');
+      } else {
+        res.cookies = res.cookies ? res.cookies : {};
+        res.cookies['shortlyid'] = { value: data.hash};
+        res.cookie('shortlyid', data.hash);
+        next();
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    })
+  });
 };

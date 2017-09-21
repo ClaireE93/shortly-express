@@ -29,7 +29,7 @@ app.get('/signup', (req, res, next) => {
   res.render('signup');
 });
 
-app.get('/', Auth.createSession, Auth.loginRedirect,
+app.get('/', Auth.createSession, Auth.isLoggedIn,
 (req, res) => {
   res.render('index');
 });
@@ -119,8 +119,13 @@ app.get('/:code', (req, res, next) => {
     .error(error => {
       res.status(500).send(error);
     })
-    .catch(() => {
-      res.redirect('/');
+    .catch((err) => {
+      if (req.url === '/favicon.ico') {
+        console.log('favicon');
+        next();
+      } else {
+        res.redirect('/');
+      }
     });
 });
 
