@@ -83,6 +83,7 @@ app.post('/links',
 /************************************************************/
 app.post('/signup', Auth.addUser);
 app.post('/login', Auth.checkLogin);
+app.get('/logout', Auth.handleLogout);
 
 
 /************************************************************/

@@ -113,5 +113,22 @@ module.exports.checkLogin = (req, res, next) => {
   .catch((err) => {
     console.error(err);
   });
+};
 
+module.exports.handleLogout = (req, res, next) => {
+  let cookieObj;
+  cookies(req, res, () => {
+    cookieObj = req.cookies;
+    for (let cookie in cookieObj) {
+      const curHash = cookieObj[cookie];
+      Session.delete({hash: curHash})
+      .catch((err) => {
+        console.error(err);
+      });
+    }
+
+    module.exports.createSession(req, res, () => {
+      next();
+    });
+  });
 };
