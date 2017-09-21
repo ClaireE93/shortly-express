@@ -21,10 +21,19 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 
 
-app.get('/', Auth.createSession,
+app.get('/', Auth.createSession, Auth.loginRedirect,
 (req, res) => {
   res.render('index');
 });
+
+// app.get('/', (req, res) => {
+//   Auth.createSession(req, res, (req, res) => {
+//     console.log('DONE with createSession')
+//     Auth.loginRedirect(req, res, (req, res) => {
+//       res.render('index');
+//       })
+//   })
+// })
 
 app.get('/create',
 (req, res) => {

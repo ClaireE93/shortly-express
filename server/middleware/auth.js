@@ -24,7 +24,8 @@ module.exports.createSession = (req, res, next) => {
       res.cookies = res.cookies ? res.cookies : {};
       res.cookies['shortlyid'] = { value: hash};
       res.cookie('shortlyid', hash);
-      next(result.id);
+      // next(result.id);
+      next();
     });
   };
 
@@ -38,6 +39,7 @@ module.exports.createSession = (req, res, next) => {
         req.session.hash = hash;
         req.session.userId = results.userId ? results.userId : null;
         req.session.user.username = results.userId ? results.user.username : undefined;
+
         next();
       } else {
         createSessionWithNewCookie();
@@ -48,6 +50,35 @@ module.exports.createSession = (req, res, next) => {
   } else {
     next();
   }
+};
+
+
+module.exports.loginRedirect = (req, res, next) => {
+  console.log('NEXT!!');
+  let cookieObj;
+  cookies(req, res, () => {
+    // console.log('in cookies', req.cookies);
+    cookieObj = req.cookies;
+    curHash = cookieObj.shortlyid;
+    Session.get({hash: curHash})
+    .then((results) => {
+      if (!results) {
+        res.setHeader('location', '/login');
+        res.redirect('/login');
+      }
+      // console.log('Results userID is', results.userID);
+      if (results.userId === null) {
+        console.log('redirecting');
+        res.setHeader('location', '/login');
+        res.redirect('/login');
+      } else {
+        next();
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  });
 };
 
 module.exports.addUser = (req, res, next) => {
