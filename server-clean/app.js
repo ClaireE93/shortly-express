@@ -121,6 +121,7 @@ app.get('/:code', (req, res, next) => {
     })
     .catch((err) => {
       if (req.url === '/favicon.ico') {
+        console.log('favicon');
         next();
       } else {
         res.redirect('/');
